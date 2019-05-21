@@ -1,0 +1,22 @@
+{
+	"admin": {
+		"password": "admin",
+		"status": 200,
+		"profile": {
+			"username": "admin",
+			"fullname": "Administrator",
+			"admin": true,
+			"userID": "JC10001"
+		}
+	},
+	"somegood": {
+		"password": "somegood",
+		"status": 200,
+		"profile": {
+			"username": "somegood",
+			"fullname": "All Good",
+			"admin": false,
+			"userID": "JC10003"
+		}
+	}
+}

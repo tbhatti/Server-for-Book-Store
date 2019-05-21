@@ -1,0 +1,20 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ."
+  },
+  "author": "Tanzeem Bhatti",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "express-fileupload": "^0.4.0",
+    "formidable": "^1.2.1",
+    "mysql": "^2.14.1",
+    "word-extractor": "^0.1.4"
+  }
+}
