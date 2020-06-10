@@ -5,11 +5,14 @@ var extractor = new WordExtractor();
 var connectionsPool = require('./db');
 
 const express = require('express');// file upload 1
-const fileUpload = require('express-fileupload'); // file upload 2
+const fileUpload = require('express-fileupload'); // file upload  
 const app = express(); // file upload 3
 const cors = require('cors');
 
+
 var bootImageName = '';
+
+
 
 /** */
 //var formidable = require('formidable');
@@ -41,10 +44,13 @@ app.get("/users-list", (req, res) => {
   let email = req.body.email
   let sql = "SELECT * FROM users";
   connectionsPool.getConnection(function (err, connection) {
+    console.log('=============================', connection)
     connection.query(sql, function (err, rows) {
-        connection.release();
-        if (err) throw err;
-        if(rows.length === 0) return res.status(404).send({error: 'User with the given username does not exit'})
+        //connection.release();
+        if (err) {
+          console.log('=============================', err)
+        }
+        if(rows.length === 0) return res.status(404).send({error: 'User with the given username does not exist'})
         userProfile = rows;
         res.send(rows);
     });
@@ -57,7 +63,7 @@ app.post("/user-details", (req, res) => {
     connection.query(sql, [userID], function (err, rows) {
         connection.release();
         if (err) throw err;
-        if(rows.length === 0) return res.status(404).send({error: 'User with the given username does not exit'})
+        if(rows.length === 0) return res.status(404).send({error: 'User with the given username does not exist'})
         res.send(rows);
     });
 });  
@@ -95,12 +101,12 @@ app.post('/upload', function(req, res) {
   bootImageName = req.files.myCV;
  
   // Use the mv() method to place the file somewhere on your server
-  uploadedFile.mv('D:/Tanzeem-dev/Book-Store/'+ uploadedFile.name, function(err) { 
+  uploadedFile.mv('C:/Users/Tanzeem_Bhatti/Documents/Workspace 30 March/Test App/Book-Store/assets/books/'+ uploadedFile.name, function(err) { 
     
     if (err)
       return res.status(500).send(err);
 
-      var extracted = extractor.extract('D:/Tanzeem-dev/Book-Store/'+ uploadedFile.name);
+      var extracted = extractor.extract('C:/Users/Tanzeem_Bhatti/Documents/Workspace 30 March/Test App/Book-Store/assets/books/'+ uploadedFile.name);
       var regx = /(\d{3}-?\d{3}-?\d{7})/g;
       extracted.then(function(doc) {
         console.log('Phones==>',doc.getBody().match(regx), 'Email: ', findEmailAddresses(doc.getBody()) );
@@ -126,14 +132,29 @@ app.post("/update-user", (req, res) => {
 });    
 });
 
+app.post("/update-book", (req, res) => {
+  console.log('Request Body = ', req.body)
+ connectionsPool.getConnection(function (err, connection) {
+   //publisher,book_dimension,book_format, price,title, publish_date, cover_image, book_category, author_name
+    connection.query('UPDATE books SET publisher = ?,book_dimension=?, book_format=?, price=?, title=?, publish_date=?, cover_image=?, book_category=?, author_name=? WHERE id = ?', [req.body.publisher,req.body.book_dimension,req.body.book_format,req.body.price, req.body.title, req.body.publish_date, bootImageName.name, req.body.book_category, req.body.author_name, req.body.id], function (err, result) {
+        connection.release();
+        if (err) throw err;
+        console.log("Number of records inserted: " ,result.affectedRows);
+        res.send(result);
+    });
+});    
+});
+
+
 app.post("/login", (req, res) => {
+  console.log('I am going to login');
     let email = req.body.email
     let sql = "SELECT * FROM users WHERE email = ?";
     connectionsPool.getConnection(function (err, connection) {
       connection.query(sql, [email], function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.send({error: 'User with the given username does not exit'})
+          if(rows.length === 0) return res.send({error: 'User with the given username does not exist'})
           userProfile = rows;
           res.send(rows);
       });
@@ -156,7 +177,7 @@ app.get("/books-categories-list", (req, res) => {
     connection.query(sql, function (err, rows) {
         connection.release();
         if (err) throw err;
-        if(rows.length === 0) return res.status(404).send({error: 'There is no Categories exit'})
+        if(rows.length === 0) return res.status(404).send({error: 'There is no Categories exist'})
         res.send(rows);
     });
 });
@@ -170,7 +191,7 @@ app.post("/filter-authors", (req, res) => {
     connection.query(sql, [genre], function (err, rows) {
         connection.release();
         //if (err) throw err;
-        if(rows.length === 0) return res.send({error: 'Authors with the given Genre does not exit'})
+        if(rows.length === 0) return res.send({error: 'Authors with the given Genre does not exist'})
         res.send(rows);
     });
 });  
@@ -183,7 +204,7 @@ app.post("/search-books", (req, res) => {
       connection.query(sql, function (err, books) {
           connection.release();
           if (err) throw err;
-          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exit'})
+          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exist'})
          
           res.send(books.filter(e => e.title.toLowerCase().includes(prefix.toLowerCase()) || e.book_category.toLowerCase().includes(prefix.toLowerCase()) || e.author_name.toLowerCase().includes(prefix.toLowerCase())));
       });
@@ -204,7 +225,7 @@ app.post("/filter-books", (req, res) => {
     connection.query(sql, [genre, authorName], function (err, rows) {
         connection.release();
         if (err) throw err;
-        //if(rows.length === 0) return res.status(404).send({error: 'Authors with the given Genre does not exit'})
+        //if(rows.length === 0) return res.status(404).send({error: 'Authors with the given Genre does not exist'})
         res.send(rows);
     });
 });  
@@ -234,7 +255,7 @@ app.post("/filter-books", (req, res) => {
       connection.query(sql, function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'There is no Categories exit'})
+          if(rows.length === 0) return res.status(404).send({error: 'There is no Categories exist'})
           res.send(rows);
       });
   });
@@ -248,7 +269,7 @@ app.post("/filter-books", (req, res) => {
       connection.query(sql, [bookID], function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'Book with the given id does not exit'})
+          if(rows.length === 0) return res.status(404).send({error: 'Book with the given id does not exist'})
           res.send(rows);
       });
   });  
@@ -261,8 +282,8 @@ app.post("/filter-books", (req, res) => {
       connection.query(sql, [customer_id], function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'Cart with the given id does not exit'})
-          res.send(rows);
+          if(rows.length === 0) return res.status(200).send([{error: 'Cart with the given id does not exist'}])
+          res.send(rows); 
       });
   });  
   }); 
@@ -275,7 +296,7 @@ app.post("/filter-books", (req, res) => {
         console.log('sql', sql)
           connection.release();
          if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'Cart with the given id does not exit'})
+          if(rows.length === 0) return res.status(404).send({error: 'Cart with the given id does not exist'})
           res.send(rows);
       });
   });  
@@ -290,7 +311,7 @@ app.post("/filter-books", (req, res) => {
       [req.body.publisher,req.body.book_dimension,req.body.book_format,req.body.price, req.body.title, req.body.publish_date, bootImageName.name, req.body.book_category, req.body.author_name]
     ];
     
-    connectionsPool.getConnection(function (err, connection) {
+    connectionsPool.getConnection(function (err, connection) {  
       connection.query(sql, [values], function (err, result) {
           connection.release();
           if (err) throw err;
@@ -300,13 +321,29 @@ app.post("/filter-books", (req, res) => {
   });    
   });
 
+  app.post("/register-user", (req, res) => {
+     var sql = "INSERT INTO users (first_name, last_name, email, password) VALUES ?";
+     var values = [
+       [req.body.first_name,req.body.last_name,req.body.email,req.body.password]
+     ];
+     
+     connectionsPool.getConnection(function (err, connection) {
+       connection.query(sql, [values], function (err, result) {
+           connection.release();
+           if (err) throw err;
+           console.log("Number of records inserted: " ,result.affectedRows);
+           res.send(result);
+       });
+   });    
+   });
+
   app.get("/authors-list", (req, res) => {
     let sql = "SELECT * FROM authors";
     connectionsPool.getConnection(function (err, connection) {
       connection.query(sql, function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'There is no Authors exit'})
+          if(rows.length === 0) return res.status(404).send({error: 'There is no Authors exist'})
           res.send(rows);
       });
   });
@@ -330,14 +367,24 @@ app.post("/filter-books", (req, res) => {
    });
 
    app.post("/add-to-cart", (req, res) => {
-     console.log(req.body)
-    var sql = "INSERT INTO shoping_carts (price, customer_id, book_id, quantity) VALUES ?";
-    var values = [
-      [req.body.price, req.body.customer_id, req.body.book_id, req.body.quantity]
-    ];
-    
-    connectionsPool.getConnection(function (err, connection) {
-      connection.query(sql, [values], function (err, result) {
+     console.log('');
+      var sql = "INSERT INTO shoping_carts (price, customer_id, book_id, quantity) VALUES ?";
+      var values = [
+        [req.body.price, req.body.customer_id, req.body.book_id, req.body.quantity]
+      ];    
+      connectionsPool.getConnection(function (err, connection) {
+          connection.query(sql, [values], function (err, result) {
+              connection.release();
+              if (err) throw err;
+              console.log("Number of records inserted: " ,result.affectedRows);
+              res.send(result);
+          });
+      }); 
+  });
+
+  app.post("/update-quantity-to-cart", (req, res) => {
+   connectionsPool.getConnection(function (err, connection) {
+      connection.query('UPDATE shoping_carts SET quantity = ? WHERE book_id = ? AND customer_id = ?', [req.body.quantity, req.body.book_id, req.body.customer_id], function (err, result) {
           connection.release();
           if (err) throw err;
           console.log("Number of records inserted: " ,result.affectedRows);
@@ -353,11 +400,24 @@ app.post("/filter-books", (req, res) => {
       connection.query(sql, [cartID], function (err, rows) {
           connection.release();
           if (err) throw err;
-          if(rows.length === 0) return res.status(404).send({error: 'Cart with the given id does not exit'})
+          if(rows.length === 0) return res.status(404).send({error: 'Cart with the given id does not exist'})
           res.send(rows);
       });
   });    
  });
+
+ app.delete("/delete-book", (req, res) => {
+  var bookID = req.body.id
+  var sql = "DELETE FROM books WHERE id = ?";
+  connectionsPool.getConnection(function (err, connection) {
+    connection.query(sql, [bookID], function (err, rows) {
+        connection.release();
+        if (err) throw err;
+        if(rows.length === 0) return res.status(404).send({error: 'Book with the given id does not exist'})
+        res.send(rows);
+    });
+});    
+});
 
  app.get("/publishers-list", (req, res) => {
   let sql = "SELECT * FROM publishers";
@@ -365,7 +425,7 @@ app.post("/filter-books", (req, res) => {
     connection.query(sql, function (err, rows) {
         connection.release();
         if (err) throw err;
-        if(rows.length === 0) return res.status(404).send({error: 'There is no Publishers exit'})
+        if(rows.length === 0) return res.status(404).send({error: 'There is no Publishers exist'})
         res.send(rows);
     });
 });
@@ -415,7 +475,7 @@ app.post("/filters-books-by-categories", (req, res) => {
       connection.query(sql, category,  function (err, books) {
           connection.release();
           if (err) throw err;
-          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exit'})
+          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exist'})
          
           res.send(books);
       });
@@ -429,11 +489,28 @@ app.post("/filters-books-by-authors", (req, res) => {
       connection.query(sql, aothor,  function (err, books) {
           connection.release();
           if (err) throw err;
-          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exit'})
+          if(books.length === 0) return res.status(404).send({error: 'There is no Categories exist'})
          
           res.send(books);
       });
   });
+});
+
+app.post("/contact-us", (req, res) => {
+  let email = req.body.email
+  var sql = "INSERT INTO contact_us (first_name, last_name, email, comments) VALUES ?";
+  var values = [
+    [req.body.first_name, req.body.last_name, req.body.email, req.body.comment]
+  ];
+  
+  connectionsPool.getConnection(function (err, connection) {
+    connection.query(sql, [values], function (err, result) {
+        connection.release();
+        if (err) throw err;
+        console.log("Number of records inserted: " ,result.affectedRows);
+        res.send(result);
+    });
+});    
 });
   
 
