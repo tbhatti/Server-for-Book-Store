@@ -3,6 +3,7 @@ const users = require('./users.json')
 var WordExtractor = require("word-extractor");
 var extractor = new WordExtractor();
 var connectionsPool = require('./db');
+/***This is updated server */
 
 const express = require('express');// file upload 1
 const fileUpload = require('express-fileupload'); // file upload  
